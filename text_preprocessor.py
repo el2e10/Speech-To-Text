@@ -41,17 +41,27 @@ class TextPreprocessor():
         num_to_word_converter = lambda x : re.sub(r"\d+", self._repl_fn, x)
         data = [num_to_word_converter(x) for x in self.tmp_data] 
         return data
+    
+    def _create_txt_files(self, file):
+        file_path = Path(file)
+        txt_file_name = file_path.parent / f"{file_path.stem}.txt"
+        with open(txt_file_name, 'w') as txt_fp:
+            txt_fp.write(" ".join(self.tmp_data))
+        file_path.unlink(missing_ok=True)
 
-    def extract_text(self):
+
+    def execute(self):
         for file in Path(self.location).iterdir():
+            if(file.suffix != ".pdf"):
+                continue
             self.tmp_data = []
             pdf_reader = PdfReader(file)
             for page in pdf_reader.pages:
                 page.extract_text(visitor_text=self._visitor_text_fn)
                 self.tmp_data = self._remove_punctuations()
                 self.tmp_data = self._convert_num_to_word()
-            print(self.tmp_data)
+            self._create_txt_files(file)
 
 if __name__=='__main__':
     text_preprocessor = TextPreprocessor('Data/Transcripts')
-    text_preprocessor.extract_text()
+    text_preprocessor.execute()

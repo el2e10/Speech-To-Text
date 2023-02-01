@@ -1,6 +1,7 @@
 # User defined
 Notebooks/*
-Data/*
+Data/Audio/*
+Data/Transcripts/*
 Documents/*
 .DS_Store
 
