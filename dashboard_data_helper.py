@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def get_total_hours(manifest_df):
-    return manifest_df.duration.sum()
+    return int(manifest_df.duration.sum()/3600)
 
 def get_vocab_size(manifest_df):
     unique = manifest_df.text.apply(lambda x: pd.value_counts(x.split(" "))).sum(axis=0)

@@ -9,6 +9,7 @@ class TextPreprocessor():
     def __init__(self, pdf_directory_location):
         self.location = pdf_directory_location
         self.bold_font_regex_pattern = 'Bold'
+        self.invalid_unicode_regex_pattern = r"\\uf0[0-9a-z]+"
         self.refer_slide_regex_pattern = '\(Refer Slide Time:[\d: ]*\)'
         self.tmp_data = []
 
@@ -21,20 +22,22 @@ class TextPreprocessor():
             return 
         if(re.search(self.refer_slide_regex_pattern, text)):
             return
-        # print(text)
-        self.tmp_data.append(text)
+        self.tmp_data.append(text.strip())
     
     def _remove_punctuations(self):
-        punctuations = string.punctuation + "’"
+        punctuations = string.punctuation + "’“ˆ‘–"
         translation_table = {ord(i): None for i in punctuations}
         cleaned_data = [x.translate(translation_table) for x in self.tmp_data]
         cleaned_data = [x.lower() for x in cleaned_data]
+        cleaned_data = [re.sub(self.invalid_unicode_regex_pattern, "", x) for x in cleaned_data]
+        cleaned_data = [re.sub(r"  +", "", x) for x in cleaned_data]
+        cleaned_data = [x for x in cleaned_data if x.strip()]
         return cleaned_data
 
     def _repl_fn(self, match_obj):
         num_to_word = num2words(match_obj.group(0), lang="en")
         num_to_word = num_to_word.replace(",", "")
-        num_to_word = num_to_word.replace("-", " ")
+        num_to_word = num_to_word.replace("-", "")
         return num_to_word
 
     def _convert_num_to_word(self):
@@ -55,11 +58,11 @@ class TextPreprocessor():
             if(file.suffix != ".pdf"):
                 continue
             self.tmp_data = []
-            pdf_reader = PdfReader(file)
+            pdf_reader = PdfReader(file, strict=False)
             for page in pdf_reader.pages:
                 page.extract_text(visitor_text=self._visitor_text_fn)
-                self.tmp_data = self._remove_punctuations()
                 self.tmp_data = self._convert_num_to_word()
+                self.tmp_data = self._remove_punctuations()
             self._create_txt_files(file)
 
 if __name__=='__main__':

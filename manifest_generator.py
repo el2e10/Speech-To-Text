@@ -27,7 +27,9 @@ class ManifestGenerator():
                 audio_duration = self._get_audio_duration(audio_file)
                 transcript_data = self._get_txt_data(txt_file_path)
 
-                json_record = json.dumps({'audio_filepath': audio_file, 'duration': audio_duration, 'text': transcript_data})
+
+                json_record = json.dumps({'audio_filepath': audio_file, 'duration': audio_duration, 'text': transcript_data},
+                                ensure_ascii=False)
                 jsonl_fp.write(json_record + "\n")
             
             return jsonl_fp
